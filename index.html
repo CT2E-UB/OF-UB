@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/DEPT_NA_0.js"></script>
+        <script src="data/bdvf_1.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[43.02442434013723,-2.457709706530683],[45.75911680673892,3.430924010315066]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // modify popup if contains media
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var imgTd = tempDiv.querySelector('td img');
+            if (imgTd) {
+                var src = imgTd.getAttribute('src');
+                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgTd.parentNode.replaceChild(audio, imgTd);
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createElement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxHeight = "60vh";
+                    video.style.maxWidth = "60vw";
+                    imgTd.parentNode.replaceChild(video, imgTd);
+                    popup._contentNode.classList.add('media');
+                    // Aggiorna il popup quando il video carica i metadati
+                    video.addEventListener('loadedmetadata', function() {
+                        popup.update();
+                    });
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else {
+                    popup._contentNode.classList.remove('media');
+                }
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        function pop_DEPT_NA_0(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ID'] !== null ? autolinker.link(String(feature.properties['ID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NOM_M'] !== null ? autolinker.link(String(feature.properties['NOM_M']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NOM'] !== null ? autolinker.link(String(feature.properties['NOM']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['INSEE_DEP'] !== null ? autolinker.link(String(feature.properties['INSEE_DEP']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['INSEE_REG'] !== null ? autolinker.link(String(feature.properties['INSEE_REG']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_DEPT_NA_0_0() {
+            return {
+                pane: 'pane_DEPT_NA_0',
+                opacity: 1,
+                color: 'rgba(82,82,82,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,247,247,1.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_DEPT_NA_0');
+        map.getPane('pane_DEPT_NA_0').style.zIndex = 400;
+        map.getPane('pane_DEPT_NA_0').style['mix-blend-mode'] = 'normal';
+        var layer_DEPT_NA_0 = new L.geoJson(json_DEPT_NA_0, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_DEPT_NA_0',
+            layerName: 'layer_DEPT_NA_0',
+            pane: 'pane_DEPT_NA_0',
+            onEachFeature: pop_DEPT_NA_0,
+            style: style_DEPT_NA_0_0,
+        });
+        bounds_group.addLayer(layer_DEPT_NA_0);
+        map.addLayer(layer_DEPT_NA_0);
+        function pop_bdvf_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="effectif" colspan="2"><strong>effectif</strong><br />' + (feature.properties['effectif'] !== null ? autolinker.link(String(feature.properties['effectif']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">complib</th>\
+                        <td class="visible-with-data" id="complib">' + (feature.properties['complib'] !== null ? autolinker.link(String(feature.properties['complib']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="typ_dipl" colspan="2"><strong>typ_dipl</strong><br />' + (feature.properties['typ_dipl'] !== null ? autolinker.link(String(feature.properties['typ_dipl']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">BUT</th>\
+                        <td class="visible-with-data" id="BUT">' + (feature.properties['BUT'] !== null ? autolinker.link(String(feature.properties['BUT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">LIC LMD</th>\
+                        <td class="visible-with-data" id="LIC LMD">' + (feature.properties['LIC LMD'] !== null ? autolinker.link(String(feature.properties['LIC LMD']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">LIC PRO</th>\
+                        <td class="visible-with-data" id="LIC PRO">' + (feature.properties['LIC PRO'] !== null ? autolinker.link(String(feature.properties['LIC PRO']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">MAST ENS</th>\
+                        <td class="visible-with-data" id="MAST ENS">' + (feature.properties['MAST ENS'] !== null ? autolinker.link(String(feature.properties['MAST ENS']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">MAST LMD</th>\
+                        <td class="visible-with-data" id="MAST LMD">' + (feature.properties['MAST LMD'] !== null ? autolinker.link(String(feature.properties['MAST LMD']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_bdvf_1_0(feature) {
+            switch(String(feature.properties['typ_dipl'])) {
+                case 'DP':
+                    return {
+                pane: 'pane_bdvf_1',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(212,69,124,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DR':
+                    return {
+                pane: 'pane_bdvf_1',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,150,58,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'XA':
+                    return {
+                pane: 'pane_bdvf_1',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(66,209,154,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'XB':
+                    return {
+                pane: 'pane_bdvf_1',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(63,125,226,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'XD':
+                    return {
+                pane: 'pane_bdvf_1',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(152,44,219,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_bdvf_1');
+        map.getPane('pane_bdvf_1').style.zIndex = 401;
+        map.getPane('pane_bdvf_1').style['mix-blend-mode'] = 'normal';
+        var layer_bdvf_1 = new L.geoJson(json_bdvf_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_bdvf_1',
+            layerName: 'layer_bdvf_1',
+            pane: 'pane_bdvf_1',
+            onEachFeature: pop_bdvf_1,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_bdvf_1_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_bdvf_1);
+        map.addLayer(layer_bdvf_1);
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"typ_dipl": "str","BUT": "str","LIC PRO": "str","LIC LMD": "str","MAST LMD": "str","MAST ENS": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_typ_dipl = document.createElement('div');
+            div_typ_dipl.id = "div_typ_dipl";
+            div_typ_dipl.className= "filterselect";
+            document.getElementById("menu").appendChild(div_typ_dipl);
+            sel_typ_dipl = document.createElement('select');
+            sel_typ_dipl.multiple = true;
+            sel_typ_dipl.size = 5;
+            sel_typ_dipl.id = "sel_typ_dipl";
+            var typ_dipl_options_str = "<option value='' unselected></option>";
+            sel_typ_dipl.onchange = function(){filterFunc()};
+            typ_dipl_options_str  += '<option value="DP">DP</option>';
+            typ_dipl_options_str  += '<option value="DR">DR</option>';
+            typ_dipl_options_str  += '<option value="XA">XA</option>';
+            typ_dipl_options_str  += '<option value="XB">XB</option>';
+            typ_dipl_options_str  += '<option value="XD">XD</option>';
+            sel_typ_dipl.innerHTML = typ_dipl_options_str;
+            div_typ_dipl.appendChild(sel_typ_dipl);
+            var lab_typ_dipl = document.createElement('div');
+            lab_typ_dipl.innerHTML = 'typ_dipl';
+            lab_typ_dipl.className = 'filterlabel';
+            div_typ_dipl.appendChild(lab_typ_dipl);
+            var reset_typ_dipl = document.createElement('div');
+            reset_typ_dipl.innerHTML = 'clear filter';
+            reset_typ_dipl.className = 'filterlabel';
+            reset_typ_dipl.onclick = function() {
+                var options = document.getElementById("sel_typ_dipl").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_typ_dipl.appendChild(reset_typ_dipl);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_BUT = document.createElement('div');
+            div_BUT.id = "div_BUT";
+            div_BUT.className= "filterselect";
+            document.getElementById("menu").appendChild(div_BUT);
+            sel_BUT = document.createElement('select');
+            sel_BUT.multiple = true;
+            sel_BUT.size = 10;
+            sel_BUT.id = "sel_BUT";
+            var BUT_options_str = "<option value='' unselected></option>";
+            sel_BUT.onchange = function(){filterFunc()};
+            BUT_options_str  += '<option value="NULL">NULL</option>';
+            BUT_options_str  += '<option value="CARRIERES SOCIALES">CARRIERES SOCIALES</option>';
+            BUT_options_str  += '<option value="GENIE BIOLOGIQUE">GENIE BIOLOGIQUE</option>';
+            BUT_options_str  += '<option value="GENIE CHIMIQUE - GENIE DES PROCEDES">GENIE CHIMIQUE - GENIE DES PROCEDES</option>';
+            BUT_options_str  += '<option value="GENIE CIVIL - CONSTRUCTION DURABLE">GENIE CIVIL - CONSTRUCTION DURABLE</option>';
+            BUT_options_str  += '<option value="GENIE ELECTRIQUE ET INFORMATIQUE INDUSTRIELLE">GENIE ELECTRIQUE ET INFORMATIQUE INDUSTRIELLE</option>';
+            BUT_options_str  += '<option value="GENIE MECANIQUE ET PRODUCTIQUE">GENIE MECANIQUE ET PRODUCTIQUE</option>';
+            BUT_options_str  += '<option value="GESTION ADMINISTRATIVE ET COMMERCIALE DES ORGANISATIONS">GESTION ADMINISTRATIVE ET COMMERCIALE DES ORGANISATIONS</option>';
+            BUT_options_str  += '<option value="GESTION DES ENTREPRISES ET DES ADMINISTRATIONS">GESTION DES ENTREPRISES ET DES ADMINISTRATIONS</option>';
+            BUT_options_str  += '<option value="HYGIENE, SECURITE, ENVIRONNEMENT">HYGIENE, SECURITE, ENVIRONNEMENT</option>';
+            BUT_options_str  += '<option value="INFORMATIQUE">INFORMATIQUE</option>';
+            BUT_options_str  += '<option value="MANAGEMENT DE LA LOGISTIQUE ET DES TRANSPORTS">MANAGEMENT DE LA LOGISTIQUE ET DES TRANSPORTS</option>';
+            BUT_options_str  += '<option value="MESURES PHYSIQUES">MESURES PHYSIQUES</option>';
+            BUT_options_str  += '<option value="QUALITE, LOGISTIQUE INDUSTRIELLE ET ORGANISATION">QUALITE, LOGISTIQUE INDUSTRIELLE ET ORGANISATION</option>';
+            BUT_options_str  += '<option value="SCIENCE ET GENIE DES MATERIAUX">SCIENCE ET GENIE DES MATERIAUX</option>';
+            BUT_options_str  += '<option value="TECHNIQUES DE COMMERCIALISATION">TECHNIQUES DE COMMERCIALISATION</option>';
+            sel_BUT.innerHTML = BUT_options_str;
+            div_BUT.appendChild(sel_BUT);
+            var lab_BUT = document.createElement('div');
+            lab_BUT.innerHTML = 'BUT';
+            lab_BUT.className = 'filterlabel';
+            div_BUT.appendChild(lab_BUT);
+            var reset_BUT = document.createElement('div');
+            reset_BUT.innerHTML = 'clear filter';
+            reset_BUT.className = 'filterlabel';
+            reset_BUT.onclick = function() {
+                var options = document.getElementById("sel_BUT").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_BUT.appendChild(reset_BUT);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_LICPRO = document.createElement('div');
+            div_LICPRO.id = "div_LICPRO";
+            div_LICPRO.className= "filterselect";
+            document.getElementById("menu").appendChild(div_LICPRO);
+            sel_LICPRO = document.createElement('select');
+            sel_LICPRO.multiple = true;
+            sel_LICPRO.size = 10;
+            sel_LICPRO.id = "sel_LICPRO";
+            var LICPRO_options_str = "<option value='' unselected></option>";
+            sel_LICPRO.onchange = function(){filterFunc()};
+            LICPRO_options_str  += '<option value="NULL">NULL</option>';
+            LICPRO_options_str  += '<option value="ACTIVITES JURIDIQUES : METIERS DU DROIT PRIVE">ACTIVITES JURIDIQUES : METIERS DU DROIT PRIVE</option>';
+            LICPRO_options_str  += '<option value="AGRONOMIE">AGRONOMIE</option>';
+            LICPRO_options_str  += '<option value="ASSURANCE, BANQUE, FINANCE : CHARGE DE CLIENTELE">ASSURANCE, BANQUE, FINANCE : CHARGE DE CLIENTELE</option>';
+            LICPRO_options_str  += '<option value="CHIMIE : FORMULATION">CHIMIE : FORMULATION</option>';
+            LICPRO_options_str  += '<option value="CHIMIE ANALYTIQUE, CONTROLE, QUALITE, ENVIRONNEMENT">CHIMIE ANALYTIQUE, CONTROLE, QUALITE, ENVIRONNEMENT</option>';
+            LICPRO_options_str  += '<option value="CHIMIE ET PHYSIQUE DES MATERIAUX">CHIMIE ET PHYSIQUE DES MATERIAUX</option>';
+            LICPRO_options_str  += '<option value="COMMERCE ET DISTRIBUTION">COMMERCE ET DISTRIBUTION</option>';
+            LICPRO_options_str  += '<option value="GESTION DES STRUCTURES SANITAIRES ET SOCIALES">GESTION DES STRUCTURES SANITAIRES ET SOCIALES</option>';
+            LICPRO_options_str  += '<option value="GESTION ET DEVELOPPEMENT DES ORGANISATIONS, DES SERVICES SPORTIFS ET DE LOISIRS">GESTION ET DEVELOPPEMENT DES ORGANISATIONS, DES SERVICES SPORTIFS ET DE LOISIRS</option>';
+            LICPRO_options_str  += '<option value="GESTION ET MAINTENANCE DES INSTALLATIONS ENERGETIQUES">GESTION ET MAINTENANCE DES INSTALLATIONS ENERGETIQUES</option>';
+            LICPRO_options_str  += '<option value="INDUSTRIES AGROALIMENTAIRES : GESTION, PRODUCTION ET VALORISATION">INDUSTRIES AGROALIMENTAIRES : GESTION, PRODUCTION ET VALORISATION</option>';
+            LICPRO_options_str  += '<option value="INDUSTRIES PHARMACEUTIQUES, COSMETOLOGIQUES ET DE SANTE : GESTION, PRODUCTION ET VALORISATION">INDUSTRIES PHARMACEUTIQUES, COSMETOLOGIQUES ET DE SANTE : GESTION, PRODUCTION ET VALORISATION</option>';
+            LICPRO_options_str  += '<option value="INTERVENTION SOCIALE : ACCOMPAGNEMENT DE PUBLICS SPECIFIQUES">INTERVENTION SOCIALE : ACCOMPAGNEMENT DE PUBLICS SPECIFIQUES</option>';
+            LICPRO_options_str  += '<option value="INTERVENTION SOCIALE : INSERTION ET REINSERTION SOCIALE ET PROFESSIONNELLE">INTERVENTION SOCIALE : INSERTION ET REINSERTION SOCIALE ET PROFESSIONNELLE</option>';
+            LICPRO_options_str  += '<option value="MAINTENANCE ET TECHNOLOGIE : SYSTEMES PLURITECHNIQUES">MAINTENANCE ET TECHNOLOGIE : SYSTEMES PLURITECHNIQUES</option>';
+            LICPRO_options_str  += '<option value="MANAGEMENT ET GESTION DES ORGANISATIONS">MANAGEMENT ET GESTION DES ORGANISATIONS</option>';
+            LICPRO_options_str  += '<option value="METIERS DE L&apos;ENERGETIQUE, DE L&apos;ENVIRONNEMENT ET DU GENIE CLIMATIQUE">METIERS DE L&apos;ENERGETIQUE, DE L&apos;ENVIRONNEMENT ET DU GENIE CLIMATIQUE</option>';
+            LICPRO_options_str  += '<option value="METIERS DE L&apos;IMMOBILIER : GESTION ET DEVELOPPEMENT DE PATRIMOINE IMMOBILIER">METIERS DE L&apos;IMMOBILIER : GESTION ET DEVELOPPEMENT DE PATRIMOINE IMMOBILIER</option>';
+            LICPRO_options_str  += '<option value="METIERS DE L&apos;IMMOBILIER : TRANSACTION ET COMMERCIALISATION DE BIENS IMMOBILIERS">METIERS DE L&apos;IMMOBILIER : TRANSACTION ET COMMERCIALISATION DE BIENS IMMOBILIERS</option>';
+            LICPRO_options_str  += '<option value="METIERS DE L&apos;INDUSTRIE : INDUSTRIE AERONAUTIQUE">METIERS DE L&apos;INDUSTRIE : INDUSTRIE AERONAUTIQUE</option>';
+            LICPRO_options_str  += '<option value="METIERS DE L&apos;INFORMATIQUE : ADMINISTRATION ET SECURITE DES SYSTEMES ET DES RESEAUX">METIERS DE L&apos;INFORMATIQUE : ADMINISTRATION ET SECURITE DES SYSTEMES ET DES RESEAUX</option>';
+            LICPRO_options_str  += '<option value="METIERS DE LA GESTION ET DE LA COMPTABILITE : COMPTABILITE ET PAIE">METIERS DE LA GESTION ET DE LA COMPTABILITE : COMPTABILITE ET PAIE</option>';
+            LICPRO_options_str  += '<option value="METIERS DE LA GESTION ET DE LA COMPTABILITE : REVISION COMPTABLE">METIERS DE LA GESTION ET DE LA COMPTABILITE : REVISION COMPTABLE</option>';
+            LICPRO_options_str  += '<option value="METIERS DE LA QUALITE">METIERS DE LA QUALITE</option>';
+            LICPRO_options_str  += '<option value="METIERS DE LA SANTE : MANAGEMENT DES ETABLISSEMENTS D&apos;HYDROTHERAPIE">METIERS DE LA SANTE : MANAGEMENT DES ETABLISSEMENTS D&apos;HYDROTHERAPIE</option>';
+            LICPRO_options_str  += '<option value="METIERS DE LA SANTE : NUTRITION, ALIMENTATION">METIERS DE LA SANTE : NUTRITION, ALIMENTATION</option>';
+            LICPRO_options_str  += '<option value="METIERS DE LA SANTE : TECHNOLOGIES">METIERS DE LA SANTE : TECHNOLOGIES</option>';
+            LICPRO_options_str  += '<option value="METIERS DES ADMINISTRATIONS ET COLLECTIVITES TERRITORIALES">METIERS DES ADMINISTRATIONS ET COLLECTIVITES TERRITORIALES</option>';
+            LICPRO_options_str  += '<option value="METIERS DU NOTARIAT">METIERS DU NOTARIAT</option>';
+            LICPRO_options_str  += '<option value="METIERS DU TOURISME : COMMUNICATION ET VALORISATION DES TERRITOIRES">METIERS DU TOURISME : COMMUNICATION ET VALORISATION DES TERRITOIRES</option>';
+            LICPRO_options_str  += '<option value="ORGANISATION, MANAGEMENT DES SERVICES DE L&apos;AUTOMOBILE">ORGANISATION, MANAGEMENT DES SERVICES DE L&apos;AUTOMOBILE</option>';
+            LICPRO_options_str  += '<option value="TECHNICO-COMMERCIAL">TECHNICO-COMMERCIAL</option>';
+            sel_LICPRO.innerHTML = LICPRO_options_str;
+            div_LICPRO.appendChild(sel_LICPRO);
+            var lab_LICPRO = document.createElement('div');
+            lab_LICPRO.innerHTML = 'LIC PRO';
+            lab_LICPRO.className = 'filterlabel';
+            div_LICPRO.appendChild(lab_LICPRO);
+            var reset_LICPRO = document.createElement('div');
+            reset_LICPRO.innerHTML = 'clear filter';
+            reset_LICPRO.className = 'filterlabel';
+            reset_LICPRO.onclick = function() {
+                var options = document.getElementById("sel_LICPRO").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_LICPRO.appendChild(reset_LICPRO);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_LICLMD = document.createElement('div');
+            div_LICLMD.id = "div_LICLMD";
+            div_LICLMD.className= "filterselect";
+            document.getElementById("menu").appendChild(div_LICLMD);
+            sel_LICLMD = document.createElement('select');
+            sel_LICLMD.multiple = true;
+            sel_LICLMD.size = 10;
+            sel_LICLMD.id = "sel_LICLMD";
+            var LICLMD_options_str = "<option value='' unselected></option>";
+            sel_LICLMD.onchange = function(){filterFunc()};
+            LICLMD_options_str  += '<option value="NULL">NULL</option>';
+            LICLMD_options_str  += '<option value="ADMINISTRATION ECONOMIQUE ET SOCIALE">ADMINISTRATION ECONOMIQUE ET SOCIALE</option>';
+            LICLMD_options_str  += '<option value="CHIMIE">CHIMIE</option>';
+            LICLMD_options_str  += '<option value="DROIT">DROIT</option>';
+            LICLMD_options_str  += '<option value="ECONOMIE ET GESTION">ECONOMIE ET GESTION</option>';
+            LICLMD_options_str  += '<option value="INFORMATIQUE">INFORMATIQUE</option>';
+            LICLMD_options_str  += '<option value="MATHEMATIQUES">MATHEMATIQUES</option>';
+            LICLMD_options_str  += '<option value="MATHEMATIQUES ET INFORMATIQUE APPLIQUEES AUX SCIENCES HUMAINES ET SOCIALES">MATHEMATIQUES ET INFORMATIQUE APPLIQUEES AUX SCIENCES HUMAINES ET SOCIALES</option>';
+            LICLMD_options_str  += '<option value="PHYSIQUE">PHYSIQUE</option>';
+            LICLMD_options_str  += '<option value="PHYSIQUE, CHIMIE">PHYSIQUE, CHIMIE</option>';
+            LICLMD_options_str  += '<option value="PORTAIL SCIENCES ET TECHNOLOGIES">PORTAIL SCIENCES ET TECHNOLOGIES</option>';
+            LICLMD_options_str  += '<option value="PORTAIL SCIENCES HUMAINES ET SOCIALES">PORTAIL SCIENCES HUMAINES ET SOCIALES</option>';
+            LICLMD_options_str  += '<option value="PORTAIL STAPS">PORTAIL STAPS</option>';
+            LICLMD_options_str  += '<option value="PSYCHOLOGIE">PSYCHOLOGIE</option>';
+            LICLMD_options_str  += '<option value="SCIENCES DE L&apos;EDUCATION ET DE LA FORMATION">SCIENCES DE L&apos;EDUCATION ET DE LA FORMATION</option>';
+            LICLMD_options_str  += '<option value="SCIENCES DE L&apos;HOMME, ANTHROPOLOGIE, ETHNOLOGIE">SCIENCES DE L&apos;HOMME, ANTHROPOLOGIE, ETHNOLOGIE</option>';
+            LICLMD_options_str  += '<option value="SCIENCES DE LA TERRE">SCIENCES DE LA TERRE</option>';
+            LICLMD_options_str  += '<option value="SCIENCES DE LA VIE">SCIENCES DE LA VIE</option>';
+            LICLMD_options_str  += '<option value="SCIENCES DE LA VIGNE ET DU VIN">SCIENCES DE LA VIGNE ET DU VIN</option>';
+            LICLMD_options_str  += '<option value="SCIENCES ET SOCIETE">SCIENCES ET SOCIETE</option>';
+            LICLMD_options_str  += '<option value="SCIENCES ET TECHNIQUES DES ACTIVITES PHYSIQUES ET SPORTIVES : ACTIVITE PHYSIQUE ADAPTEE ET SANTE">SCIENCES ET TECHNIQUES DES ACTIVITES PHYSIQUES ET SPORTIVES : ACTIVITE PHYSIQUE ADAPTEE ET SANTE</option>';
+            LICLMD_options_str  += '<option value="SCIENCES ET TECHNIQUES DES ACTIVITES PHYSIQUES ET SPORTIVES : EDUCATION ET MOTRICITE">SCIENCES ET TECHNIQUES DES ACTIVITES PHYSIQUES ET SPORTIVES : EDUCATION ET MOTRICITE</option>';
+            LICLMD_options_str  += '<option value="SCIENCES ET TECHNIQUES DES ACTIVITES PHYSIQUES ET SPORTIVES : ENTRAINEMENT SPORTIF">SCIENCES ET TECHNIQUES DES ACTIVITES PHYSIQUES ET SPORTIVES : ENTRAINEMENT SPORTIF</option>';
+            LICLMD_options_str  += '<option value="SCIENCES ET TECHNIQUES DES ACTIVITES PHYSIQUES ET SPORTIVES : MANAGEMENT DU SPORT">SCIENCES ET TECHNIQUES DES ACTIVITES PHYSIQUES ET SPORTIVES : MANAGEMENT DU SPORT</option>';
+            LICLMD_options_str  += '<option value="SCIENCES POUR L&apos;INGENIEUR">SCIENCES POUR L&apos;INGENIEUR</option>';
+            LICLMD_options_str  += '<option value="SOCIOLOGIE">SOCIOLOGIE</option>';
+            sel_LICLMD.innerHTML = LICLMD_options_str;
+            div_LICLMD.appendChild(sel_LICLMD);
+            var lab_LICLMD = document.createElement('div');
+            lab_LICLMD.innerHTML = 'LIC LMD';
+            lab_LICLMD.className = 'filterlabel';
+            div_LICLMD.appendChild(lab_LICLMD);
+            var reset_LICLMD = document.createElement('div');
+            reset_LICLMD.innerHTML = 'clear filter';
+            reset_LICLMD.className = 'filterlabel';
+            reset_LICLMD.onclick = function() {
+                var options = document.getElementById("sel_LICLMD").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_LICLMD.appendChild(reset_LICLMD);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_MASTLMD = document.createElement('div');
+            div_MASTLMD.id = "div_MASTLMD";
+            div_MASTLMD.className= "filterselect";
+            document.getElementById("menu").appendChild(div_MASTLMD);
+            sel_MASTLMD = document.createElement('select');
+            sel_MASTLMD.multiple = true;
+            sel_MASTLMD.size = 10;
+            sel_MASTLMD.id = "sel_MASTLMD";
+            var MASTLMD_options_str = "<option value='' unselected></option>";
+            sel_MASTLMD.onchange = function(){filterFunc()};
+            MASTLMD_options_str  += '<option value="NULL">NULL</option>';
+            MASTLMD_options_str  += '<option value="ANTHROPOLOGIE">ANTHROPOLOGIE</option>';
+            MASTLMD_options_str  += '<option value="ARCHEOLOGIE, SCIENCES POUR L&apos;ARCHEOLOGIE">ARCHEOLOGIE, SCIENCES POUR L&apos;ARCHEOLOGIE</option>';
+            MASTLMD_options_str  += '<option value="BIO-INFORMATIQUE">BIO-INFORMATIQUE</option>';
+            MASTLMD_options_str  += '<option value="BIOCHIMIE, BIOLOGIE MOLECULAIRE">BIOCHIMIE, BIOLOGIE MOLECULAIRE</option>';
+            MASTLMD_options_str  += '<option value="BIODIVERSITE, ECOLOGIE ET EVOLUTION">BIODIVERSITE, ECOLOGIE ET EVOLUTION</option>';
+            MASTLMD_options_str  += '<option value="BIOLOGIE, AGROSCIENCES">BIOLOGIE, AGROSCIENCES</option>';
+            MASTLMD_options_str  += '<option value="BIOLOGIE-SANTE">BIOLOGIE-SANTE</option>';
+            MASTLMD_options_str  += '<option value="CHIMIE">CHIMIE</option>';
+            MASTLMD_options_str  += '<option value="COMPTABILITE-CONTROLE-AUDIT">COMPTABILITE-CONTROLE-AUDIT</option>';
+            MASTLMD_options_str  += '<option value="CONTROLE DE GESTION ET AUDIT ORGANISATIONNEL">CONTROLE DE GESTION ET AUDIT ORGANISATIONNEL</option>';
+            MASTLMD_options_str  += '<option value="DROIT">DROIT</option>';
+            MASTLMD_options_str  += '<option value="DROIT DE LA PROPRIETE INTELLECTUELLE">DROIT DE LA PROPRIETE INTELLECTUELLE</option>';
+            MASTLMD_options_str  += '<option value="DROIT DE LA SANTE">DROIT DE LA SANTE</option>';
+            MASTLMD_options_str  += '<option value="DROIT DES AFFAIRES">DROIT DES AFFAIRES</option>';
+            MASTLMD_options_str  += '<option value="DROIT EUROPEEN">DROIT EUROPEEN</option>';
+            MASTLMD_options_str  += '<option value="DROIT INTERNATIONAL">DROIT INTERNATIONAL</option>';
+            MASTLMD_options_str  += '<option value="DROIT NOTARIAL">DROIT NOTARIAL</option>';
+            MASTLMD_options_str  += '<option value="DROIT PENAL ET SCIENCES CRIMINELLES">DROIT PENAL ET SCIENCES CRIMINELLES</option>';
+            MASTLMD_options_str  += '<option value="DROIT PRIVE">DROIT PRIVE</option>';
+            MASTLMD_options_str  += '<option value="DROIT PUBLIC">DROIT PUBLIC</option>';
+            MASTLMD_options_str  += '<option value="DROIT SOCIAL">DROIT SOCIAL</option>';
+            MASTLMD_options_str  += '<option value="ECONOMIE DU DEVELOPPEMENT">ECONOMIE DU DEVELOPPEMENT</option>';
+            MASTLMD_options_str  += '<option value="ECONOMIE INTERNATIONALE">ECONOMIE INTERNATIONALE</option>';
+            MASTLMD_options_str  += '<option value="ENTREPRENEURIAT ET MANAGEMENT DE PROJETS">ENTREPRENEURIAT ET MANAGEMENT DE PROJETS</option>';
+            MASTLMD_options_str  += '<option value="FINANCE">FINANCE</option>';
+            MASTLMD_options_str  += '<option value="GEORESSOURCES, GEORISQUES, GEOTECHNIQUE">GEORESSOURCES, GEORISQUES, GEOTECHNIQUE</option>';
+            MASTLMD_options_str  += '<option value="GESTION DE PATRIMOINE">GESTION DE PATRIMOINE</option>';
+            MASTLMD_options_str  += '<option value="GESTION DES RESSOURCES HUMAINES">GESTION DES RESSOURCES HUMAINES</option>';
+            MASTLMD_options_str  += '<option value="HISTOIRE DU DROIT ET DES INSTITUTIONS">HISTOIRE DU DROIT ET DES INSTITUTIONS</option>';
+            MASTLMD_options_str  += '<option value="INFORMATIQUE">INFORMATIQUE</option>';
+            MASTLMD_options_str  += '<option value="INGENIERIE DE LA SANTE">INGENIERIE DE LA SANTE</option>';
+            MASTLMD_options_str  += '<option value="INGENIERIE DES SYSTEMES COMPLEXES">INGENIERIE DES SYSTEMES COMPLEXES</option>';
+            MASTLMD_options_str  += '<option value="INTELLIGENCE ECONOMIQUE">INTELLIGENCE ECONOMIQUE</option>';
+            MASTLMD_options_str  += '<option value="JUSTICE, PROCES ET PROCEDURES">JUSTICE, PROCES ET PROCEDURES</option>';
+            MASTLMD_options_str  += '<option value="MAINTENANCE AERONAUTIQUE">MAINTENANCE AERONAUTIQUE</option>';
+            MASTLMD_options_str  += '<option value="MANAGEMENT">MANAGEMENT</option>';
+            MASTLMD_options_str  += '<option value="MANAGEMENT ET ADMINISTRATION DES ENTREPRISES">MANAGEMENT ET ADMINISTRATION DES ENTREPRISES</option>';
+            MASTLMD_options_str  += '<option value="MANAGEMENT ET COMMERCE INTERNATIONAL">MANAGEMENT ET COMMERCE INTERNATIONAL</option>';
+            MASTLMD_options_str  += '<option value="MARKETING, VENTE">MARKETING, VENTE</option>';
+            MASTLMD_options_str  += '<option value="MATHEMATIQUES APPLIQUEES, STATISTIQUE">MATHEMATIQUES APPLIQUEES, STATISTIQUE</option>';
+            MASTLMD_options_str  += '<option value="MATHEMATIQUES ET APPLICATIONS">MATHEMATIQUES ET APPLICATIONS</option>';
+            MASTLMD_options_str  += '<option value="MECANIQUE">MECANIQUE</option>';
+            MASTLMD_options_str  += '<option value="METHODES INFORMATIQUES APPLIQUEES A LA GESTION DES ENTREPRISES-MIAGE">METHODES INFORMATIQUES APPLIQUEES A LA GESTION DES ENTREPRISES-MIAGE</option>';
+            MASTLMD_options_str  += '<option value="MONNAIE, BANQUE, FINANCE, ASSURANCE">MONNAIE, BANQUE, FINANCE, ASSURANCE</option>';
+            MASTLMD_options_str  += '<option value="NEUROSCIENCES">NEUROSCIENCES</option>';
+            MASTLMD_options_str  += '<option value="NUTRITION ET SCIENCES DES ALIMENTS">NUTRITION ET SCIENCES DES ALIMENTS</option>';
+            MASTLMD_options_str  += '<option value="PHARMACOLOGIE">PHARMACOLOGIE</option>';
+            MASTLMD_options_str  += '<option value="PHYSIQUE FONDAMENTALE ET APPLICATIONS">PHYSIQUE FONDAMENTALE ET APPLICATIONS</option>';
+            MASTLMD_options_str  += '<option value="PSYCHOLOGIE">PSYCHOLOGIE</option>';
+            MASTLMD_options_str  += '<option value="SANTE">SANTE</option>';
+            MASTLMD_options_str  += '<option value="SANTE PUBLIQUE">SANTE PUBLIQUE</option>';
+            MASTLMD_options_str  += '<option value="SCIENCE POLITIQUE">SCIENCE POLITIQUE</option>';
+            MASTLMD_options_str  += '<option value="SCIENCES COGNITIVES">SCIENCES COGNITIVES</option>';
+            MASTLMD_options_str  += '<option value="SCIENCES DE L&apos;EDUCATION ET DE LA FORMATION">SCIENCES DE L&apos;EDUCATION ET DE LA FORMATION</option>';
+            MASTLMD_options_str  += '<option value="SCIENCES DE LA MER">SCIENCES DE LA MER</option>';
+            MASTLMD_options_str  += '<option value="SCIENCES DE LA VIGNE ET DU VIN">SCIENCES DE LA VIGNE ET DU VIN</option>';
+            MASTLMD_options_str  += '<option value="SCIENCES DU MEDICAMENT ET DES PRODUITS DE SANTE">SCIENCES DU MEDICAMENT ET DES PRODUITS DE SANTE</option>';
+            MASTLMD_options_str  += '<option value="SCIENCES SOCIALES">SCIENCES SOCIALES</option>';
+            MASTLMD_options_str  += '<option value="STAPS:ACTIVITE PHYSIQUE ADAPTEE ET SANTE">STAPS:ACTIVITE PHYSIQUE ADAPTEE ET SANTE</option>';
+            MASTLMD_options_str  += '<option value="STAPS:ENTRAINEMENT ET OPTIMISATION DE LA PERFORMANCE SPORTIVE">STAPS:ENTRAINEMENT ET OPTIMISATION DE LA PERFORMANCE SPORTIVE</option>';
+            MASTLMD_options_str  += '<option value="STAPS:MANAGEMENT DU SPORT">STAPS:MANAGEMENT DU SPORT</option>';
+            MASTLMD_options_str  += '<option value="TOXICOLOGIE ET ECO-TOXICOLOGIE">TOXICOLOGIE ET ECO-TOXICOLOGIE</option>';
+            sel_MASTLMD.innerHTML = MASTLMD_options_str;
+            div_MASTLMD.appendChild(sel_MASTLMD);
+            var lab_MASTLMD = document.createElement('div');
+            lab_MASTLMD.innerHTML = 'MAST LMD';
+            lab_MASTLMD.className = 'filterlabel';
+            div_MASTLMD.appendChild(lab_MASTLMD);
+            var reset_MASTLMD = document.createElement('div');
+            reset_MASTLMD.innerHTML = 'clear filter';
+            reset_MASTLMD.className = 'filterlabel';
+            reset_MASTLMD.onclick = function() {
+                var options = document.getElementById("sel_MASTLMD").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_MASTLMD.appendChild(reset_MASTLMD);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_MASTENS = document.createElement('div');
+            div_MASTENS.id = "div_MASTENS";
+            div_MASTENS.className= "filterselect";
+            document.getElementById("menu").appendChild(div_MASTENS);
+            sel_MASTENS = document.createElement('select');
+            sel_MASTENS.multiple = true;
+            sel_MASTENS.size = 5;
+            sel_MASTENS.id = "sel_MASTENS";
+            var MASTENS_options_str = "<option value='' unselected></option>";
+            sel_MASTENS.onchange = function(){filterFunc()};
+            MASTENS_options_str  += '<option value="NULL">NULL</option>';
+            MASTENS_options_str  += '<option value="METIERS DE L&apos;ENSEIGNEMENT, DE L&apos;EDUCATION ET DE LA FORMATION (MEEF), 1er DEGRE">METIERS DE L&apos;ENSEIGNEMENT, DE L&apos;EDUCATION ET DE LA FORMATION (MEEF), 1er DEGRE</option>';
+            MASTENS_options_str  += '<option value="METIERS DE L&apos;ENSEIGNEMENT, DE L&apos;EDUCATION ET DE LA FORMATION (MEEF), 2e DEGRE">METIERS DE L&apos;ENSEIGNEMENT, DE L&apos;EDUCATION ET DE LA FORMATION (MEEF), 2e DEGRE</option>';
+            MASTENS_options_str  += '<option value="METIERS DE L&apos;ENSEIGNEMENT, DE L&apos;EDUCATION ET DE LA FORMATION (MEEF), ENCADREMENT EDUCATIF">METIERS DE L&apos;ENSEIGNEMENT, DE L&apos;EDUCATION ET DE LA FORMATION (MEEF), ENCADREMENT EDUCATIF</option>';
+            MASTENS_options_str  += '<option value="METIERS DE L&apos;ENSEIGNEMENT, DE L&apos;EDUCATION ET DE LA FORMATION (MEEF), PRATIQUES ET INGENIERIE DE LA FORMATION">METIERS DE L&apos;ENSEIGNEMENT, DE L&apos;EDUCATION ET DE LA FORMATION (MEEF), PRATIQUES ET INGENIERIE DE LA FORMATION</option>';
+            sel_MASTENS.innerHTML = MASTENS_options_str;
+            div_MASTENS.appendChild(sel_MASTENS);
+            var lab_MASTENS = document.createElement('div');
+            lab_MASTENS.innerHTML = 'MAST ENS';
+            lab_MASTENS.className = 'filterlabel';
+            div_MASTENS.appendChild(lab_MASTENS);
+            var reset_MASTENS = document.createElement('div');
+            reset_MASTENS.innerHTML = 'clear filter';
+            reset_MASTENS.className = 'filterlabel';
+            reset_MASTENS.onclick = function() {
+                var options = document.getElementById("sel_MASTENS").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_MASTENS.appendChild(reset_MASTENS);
+        </script>        
+    </body>
+</html>
